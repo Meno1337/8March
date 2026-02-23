@@ -10,7 +10,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #ff0000;
+            background: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
@@ -314,7 +314,7 @@ function checkErasedPercent(){
             const percent = (erased / total) * 100;
             console.log("ERASED:", percent.toFixed(2) + "%");
 
-            if (percent >= 1.5 && !textShown) {
+            if (percent >= 90 && !textShown) {
                 textShown = true;
 
                 document.getElementById('repo-text').classList.add('show');
