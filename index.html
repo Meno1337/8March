@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>8 Марта</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #ff0000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff0f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 1.5s ease, visibility 1.5s;
+        }
+
+        #start-btn {
+            position: relative;
+            padding: 20px 60px;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: white;
+            background: #ff4d7d;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 15px 35px rgba(255, 77, 125, 0.4);
+            z-index: 10002;
+            transition: transform 0.3s ease, background 0.3s;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.1);
+            background: #ff3367;
+        }
+
+        .flower {
+            position: absolute;
+            top: -50px;
+            z-index: 10001;
+            pointer-events: none;
+            user-select: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(110vh) rotate(360deg);
+            }
+        }
+
+        #main-content {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .animation-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            align-items: flex-start;
+        }
+
+        .photo-top { position: absolute; top: 10%; width: 1300px; z-index: 5; }
+        .photo-bottom { position: absolute; top: 10%; width: 1300px; z-index: 4; }
+        .photo-new { position: absolute; top: 10%; width: 1300px; z-index: 4; opacity: 0; transform: translateX(-1500px); }
+        .photo-back { position: absolute; top: 10%; width: 1300px; z-index: 1; display: none; }
+        .photo-arc { position: absolute; top: 10%; width: 1300px; z-index: 0; display: none; opacity: 0; }
+        .photo-final { position: absolute; top: 10%; width: 1300px; z-index: 2; display: none; }
+        .photo-last { position: absolute; top: 10%; width: 1300px; z-index: 2; display: none; }
+
+        #scratch-canvas {
+            position: absolute;
+            top: 10%;
+            z-index: 10;
+            cursor: crosshair;
+            touch-action: none;
+            display: none;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #repo-text {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 9%;
+            font-size: 72px;
+            color: #ff3367;
+            z-index: 20;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s;
+            white-space: nowrap;
+            margin: 0;
+            pointer-events: none;
+        }
+        #repo-text.show { opacity: 1; visibility: visible; }
+
+        #sub-text {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 18%;
+            font-size: 24px;
+            color: #ff3367;
+            font-style: italic;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease, visibility 0.8s;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        #sub-text.show { opacity: 1; visibility: visible; }
+
+        .move-and-fade { animation: moveLeftFade 3s ease-in-out forwards; }
+        @keyframes moveLeftFade { 0% {transform: translateX(0);opacity:1;} 70% {transform: translateX(400px);opacity:1;} 100% { transform: translateX(400px);opacity:0;} }
+
+        .move-right-exit { animation: exitRight 2s ease-in-out forwards; }
+        @keyframes exitRight { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(400px); opacity: 0; } }
+
+        .move-left-enter { animation: enterLeft 2s ease-in-out forwards; }
+        @keyframes enterLeft { 0% { transform: translateX(-400px); opacity: 1; } 100% { transform: translateX(0); opacity: 1; } }
+
+        .move-arc { display: block !important; opacity: 1 !important; animation: rainbowArc 2.5s ease-in-out forwards; }
+        @keyframes rainbowArc {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-150px, 150px) rotate(-5deg); }
+            100% { transform: translate(-300px, 50px) rotate(-10deg); }
+        }
+
+        /* Сердечки */
+        #hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99999;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            color: #ff3367;
+            animation: fallHeart linear forwards;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        @keyframes fallHeart {
+            0% { transform: translateY(-50px) rotate(0deg); opacity:1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity:0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <button id="start-btn">НАЧАТЬ</button>
+    </div>
+
+    <h1 id="repo-text">Пошли в REPO</h1>
+    <p id="sub-text">С 8 марта, солнце 🌸</p>
+
+    <div class="animation-wrapper">
+        <img src="img/1.png" class="photo-top" alt="1">
+        <img src="img/2.png" class="photo-bottom" alt="2">
+        <img src="img/3.png" class="photo-new" alt="3">
+        <img src="img/4.png" class="photo-back" alt="4">
+        <img src="img/5.png" class="photo-arc" alt="5">
+        <img src="img/6.png" class="photo-final" id="scratch-cover" style="display:none;" alt="6">
+        <img src="img/7.png" class="photo-last" id="photo-7" style="display:none;" alt="7">
+        <canvas id="scratch-canvas"></canvas>
+        <img src="img/8.png" id="photo-8" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; object-fit:cover;" alt="8">
+    </div>
+
+    <div id="hearts-container"></div>
+
+<script>
+const welcomeScreen = document.getElementById('welcome-screen');
+const startBtn = document.getElementById('start-btn');
+const flowerIcons = ['🌸','🌹','🌷','🌺','🌼','💐'];
+
+function createFlower() {
+    const flower = document.createElement('div');
+    flower.className = 'flower';
+    flower.innerText = flowerIcons[Math.floor(Math.random()*flowerIcons.length)];
+    flower.style.left = (Math.random()*100)+'vw';
+    flower.style.fontSize = (Math.random()*20+20)+'px';
+    flower.style.animationDuration = (Math.random()*3+4)+'s';
+    welcomeScreen.appendChild(flower);
+    setTimeout(()=>flower.remove(), parseFloat(flower.style.animationDuration)*1000);
+}
+
+const flowerGenerator = setInterval(createFlower, 200);
+
+startBtn.addEventListener('click', () => {
+    clearInterval(flowerGenerator);
+    welcomeScreen.classList.add('fade-out');
+
+    const photoTop = document.querySelector('.photo-top');
+    const photoBottom = document.querySelector('.photo-bottom');
+    const photoNew = document.querySelector('.photo-new');
+    const photoBack = document.querySelector('.photo-back');
+    const photo5 = document.querySelector('.photo-arc');
+    const photo6Img = document.getElementById('scratch-cover');
+    const photo7 = document.getElementById('photo-7');
+    const canvas = document.getElementById('scratch-canvas');
+
+    setTimeout(() => {
+        if(photoBottom) photoBottom.classList.add('move-right-exit');
+        if(photoNew) photoNew.classList.add('move-left-enter');
+
+        if(photoNew){
+            photoNew.addEventListener('animationend', function(){
+                if(photoTop) photoTop.style.display='none';
+                if(photoBottom) photoBottom.style.display='none';
+                if(photoBack) photoBack.style.display='block';
+
+                if(photo5){
+                    photo5.classList.add('move-arc');
+                    photo5.addEventListener('animationend', function(){
+                        photo5.style.setProperty('display','none','important');
+                        if(photo7) photo7.style.display='block';
+
+                        if(photo6Img && photo6Img.src){
+                            const img6 = new Image();
+                            
+                            img6.src = photo6Img.src;
+                            img6.onload = () => {
+                                const targetWidth = 1300;
+                                const scale = targetWidth / img6.naturalWidth;
+                                const targetHeight = Math.round(img6.naturalHeight * scale);
+
+                                canvas.width = targetWidth;
+                                canvas.height = targetHeight;
+                                canvas.style.width = targetWidth+'px';
+                                canvas.style.height = targetHeight+'px';
+                                canvas.style.display='block';
+                                canvas.style.left='50%';
+                                canvas.style.transform='translateX(-50%)';
+                                canvas.style.top='10%';
+                                canvas.style.zIndex=10;
+
+                                const ctx = canvas.getContext('2d');
+                                ctx.clearRect(0,0,canvas.width,canvas.height);
+                                ctx.drawImage(img6,0,0,canvas.width,canvas.height);
+                                ctx.globalCompositeOperation='destination-out';
+                                ctx.lineJoin='round';
+                                ctx.lineCap='round';
+                                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                                ctx.fillStyle   = 'rgba(0,0,0,1)';
+
+                                const brushRadius = Math.round(Math.max(20, canvas.width*0.03));
+                                let isPointerDown=false, lastX=0, lastY=0;
+                                let checking=false;
+                                let textShown=false;
+
+                                function drawLine(x1,y1,x2,y2){
+                                    ctx.beginPath();
+                                    ctx.moveTo(x1,y1);
+                                    ctx.lineTo(x2,y2);
+                                    ctx.lineWidth = brushRadius * 2;
+                                    ctx.stroke(); // ВАЖНО
+                                    ctx.beginPath();
+                                    ctx.arc(x2,y2,brushRadius,0,Math.PI*2);
+                                    ctx.fill();
+                                }
+
+function checkErasedPercent(){
+    if(checking) return;
+    checking = true;
+
+    requestAnimationFrame(() => {
+        try {
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+
+            let erased = 0;
+            const total = data.length / 4; // реальное число пикселей
+
+            for (let i = 3; i < data.length; i += 4) {
+                if (data[i] < 250) erased++; // любой полупрозрачный = стёртый
+            }
+
+            const percent = (erased / total) * 100;
+            console.log("ERASED:", percent.toFixed(2) + "%");
+
+            if (percent >= 1.5 && !textShown) {
+                textShown = true;
+
+                document.getElementById('repo-text').classList.add('show');
+
+                setTimeout(() => {
+                    document.getElementById('sub-text').classList.add('show');
+                }, 800);
+
+                setTimeout(() => {
+                    startHearts();
+                }, 1800);
+            }
+
+        } catch(e){
+            console.error("getImageData error:", e);
+        } finally {
+            checking = false;
+        }
+    });
+}
+
+                                function onPointerDown(e){
+                                    isPointerDown=true;
+                                    const rect=canvas.getBoundingClientRect();
+                                    lastX = (e.clientX-rect.left)*(canvas.width/rect.width);
+                                    lastY = (e.clientY-rect.top)*(canvas.height/rect.height);
+                                    ctx.beginPath();
+                                    ctx.arc(lastX,lastY,brushRadius,0,Math.PI*2);
+                                    ctx.fill();
+                                    checkErasedPercent();
+                                    canvas.setPointerCapture(e.pointerId);
+                                    e.preventDefault();
+                                }
+
+                                function onPointerMove(e){
+                                    if(!isPointerDown) return;
+                                    const rect=canvas.getBoundingClientRect();
+                                    const x=(e.clientX-rect.left)*(canvas.width/rect.width);
+                                    const y=(e.clientY-rect.top)*(canvas.height/rect.height);
+                                    drawLine(lastX,lastY,x,y);
+                                    lastX=x; lastY=y;
+                                    checkErasedPercent();
+                                    e.preventDefault();
+                                }
+
+                                function onPointerUp(e){
+                                    isPointerDown=false;
+                                    try{ canvas.releasePointerCapture(e.pointerId);}catch(e){}
+                                    checkErasedPercent();
+                                }
+
+                                canvas.addEventListener('pointerdown',onPointerDown);
+                                canvas.addEventListener('pointermove',onPointerMove);
+                                window.addEventListener('pointerup',onPointerUp);
+                                window.addEventListener('pointercancel',onPointerUp);
+
+                            };
+                        }
+                    }, {once:true});
+                }
+            }, {once:true});
+        }
+    }, 500);
+
+    setTimeout(()=>{ welcomeScreen.style.display='none';},1500);
+});
+
+// Сердечки
+function createHeart(){
+    const heart = document.createElement('div');
+    heart.className='heart';
+    heart.innerText='❤️';
+    const startX = Math.random()*100;
+    const size = Math.random()*20+20;
+    const duration = Math.random()*2+3;
+    heart.style.left=startX+'vw';
+    heart.style.fontSize=size+'px';
+    heart.style.animationDuration=duration+'s';
+    document.getElementById('hearts-container').appendChild(heart);
+    setTimeout(()=>heart.remove(),duration*1000);
+}
+
+function startHearts(){
+    const interval = setInterval(createHeart,200);
+    setTimeout(()=>clearInterval(interval),10000);
+}
+</script>
+</body>
+</html>
